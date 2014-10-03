@@ -1,7 +1,6 @@
 from subprocess import Popen, PIPE, STDOUT
 from sys import stdin, stdout, exit
 import pexpect
-import signal
 
 interactive = False
 class GDB:
@@ -9,9 +8,6 @@ class GDB:
         self.proc = Popen(["gdb", "-n", "-q", program], bufsize=0, universal_newlines=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
         
         self.child = pexpect.spawn('gdb -n -q {}'.format(program))
-        print(self.child.expect('(gdb)'))
-        signal.signal(signal.SIGINT, signal_handler)
-        
         self.prompt = "(gdb) "
         self.output()
 
@@ -37,7 +33,7 @@ class GDB:
         self.output()
 
     def print(self, expression):
-        self.execute("p {0}".format(expression))
+        self.execute("p {}".format(expression))
         self.output()
     
     def disassemble(self):
@@ -45,11 +41,11 @@ class GDB:
         self.output()
 
     def get_stack(self, offset):
-        self.execute("x/wx $ebp-{0}".format(offset))
+        self.execute("x/wx $ebp-{}".format(offset))
         self.output()
 
     def set_stack(self, offset, value):
-        self.execute("set {{int}} ($ebp-{0}) = {1}".format(offset, value))
+        self.execute("set {{int}} ($ebp-{}) = {}".format(offset, value))
         self.output()
     
     def gdb_continue(self):
@@ -60,12 +56,12 @@ class GDB:
         global interactive
         interactive = True
         while interactive:
-            self.proc.stdin.write("{0}\n".format(input()))
-            self.output()
-    
-def signal_handler(signal, frame):
-    global interactive
-    if interactive:
-        interactive = False
-        return
-    exit(0)
+            print("[*] Reading input..")
+            try:
+                self.proc.stdin.write("{}\n".format(input()))
+                print("[*] Input read...")
+                self.output()
+            except EOFError:
+                interactive = False
+            except KeyboardInterrupt:
+                self.output()
