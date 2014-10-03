@@ -17,8 +17,13 @@ class GDB:
             input_buffer += self.proc.stdout.read(1)
         return input_buffer
 
-    def output(self):
-        print("{0}".format(self.read_until(self.prompt)), end="")
+    def output(self, consume=False):
+        output = self.read_until(self.prompt)
+        if consume: return
+        print("{0}".format(output), end="")
+
+    def print_prompt(self, end=''):
+        print("(gdb) ", end=end)
 
     def execute(self, command):
         self.proc.stdin.write("{0}\n".format(command))
@@ -55,13 +60,14 @@ class GDB:
     def gdb_interactive(self):
         global interactive
         interactive = True
+        print("[+] Entering GDB, press CTRL+D to return...")
+        self.print_prompt()
         while interactive:
-            print("[*] Reading input..")
             try:
                 self.proc.stdin.write("{}\n".format(input()))
-                print("[*] Input read...")
                 self.output()
             except EOFError:
                 interactive = False
+                print("")
             except KeyboardInterrupt:
                 self.output()
