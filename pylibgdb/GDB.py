@@ -1,6 +1,8 @@
 from subprocess import Popen, PIPE, STDOUT
 from sys import stdin, stdout, exit
+from binascii import unhexlify
 import pexpect
+import re
 
 interactive = False
 class GDB:
@@ -17,17 +19,17 @@ class GDB:
             input_buffer += self.proc.stdout.read(1)
         return input_buffer
 
-    def output(self, consume=False):
+    def output(self):
         output = self.read_until(self.prompt)
-        if consume: return
-        print("{0}".format(output), end="")
+        print("{}".format(output), end="")
+        return output
 
     def print_prompt(self, end=''):
         print("(gdb) ", end=end)
 
     def execute(self, command):
         self.proc.stdin.write("{0}\n".format(command))
-        print("{0}\n".format(command), end="")
+        print("{}\n".format(command), end="")
 
     def breakpoint(self, expression):
         self.execute("b {0}".format(expression))
@@ -45,9 +47,12 @@ class GDB:
         self.execute("disas")
         self.output()
 
-    def get_stack(self, offset):
-        self.execute("x/wx $ebp-{}".format(offset))
-        self.output()
+    def get_stack(self, offset, raw=False):
+        self.execute("x/x $ebp-{}".format(offset))
+        output = self.output()
+        match = re.compile("0x[a-z0-9]+:\s+0x([a-z0-9]+)").search(output)
+        if raw: return unhexlify(match.group(1))
+        return hex(int(match.group(1), 16))
 
     def set_stack(self, offset, value):
         self.execute("set {{int}} ($ebp-{}) = {}".format(offset, value))
@@ -60,7 +65,7 @@ class GDB:
     def gdb_interactive(self):
         global interactive
         interactive = True
-        print("[+] Entering GDB, press CTRL+D to return...")
+        print("\n[+] Entering GDB, press CTRL+D to return...")
         self.print_prompt()
         while interactive:
             try:
