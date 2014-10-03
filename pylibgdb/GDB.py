@@ -39,8 +39,8 @@ class GDB:
         self.execute("ignore {} {}".format(breakpoint, count))
         self.output()
 
-    def run(self):
-        self.execute("r")
+    def run(self, args=[]):
+        self.execute("run {}".format(" ".join(args)))
         self.output()
 
     def print(self, expression):
