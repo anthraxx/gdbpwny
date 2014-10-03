@@ -35,6 +35,10 @@ class GDB:
         self.execute("b {0}".format(expression))
         self.output()
 
+    def gdb_ignore(self, breakpoint, count=0):
+        self.execute("ignore {} {}".format(breakpoint, count))
+        self.output()
+
     def run(self):
         self.execute("r")
         self.output()
