@@ -54,9 +54,9 @@ class GDB:
     def get_stack(self, offset, raw=False):
         self.execute("x/x $ebp-{}".format(offset))
         output = self.output()
-        match = re.compile("0x[a-z0-9]+:\s+0x([a-z0-9]+)").search(output)
-        if raw: return unhexlify(match.group(1))
-        return hex(int(match.group(1), 16))
+        match = re.compile("0x[a-z0-9]+.*:\s+0x([a-z0-9]+)").search(output).group(1)
+        if raw: return unhexlify(match)
+        return hex(int(match, 16))
 
     def set_stack(self, offset, value):
         self.execute("set {{int}} ($ebp-{}) = {}".format(offset, value))
