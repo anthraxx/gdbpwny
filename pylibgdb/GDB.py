@@ -26,12 +26,12 @@ class GDB:
         print("(gdb) ", end=end)
 
     def execute(self, command):
-        self.proc.stdin.write("{0}\n".format(command))
+        self.proc.stdin.write("{}\n".format(command))
         if self.verbose >= 2: print("{}\n".format(command), end="")
         return self.read_until_prompt()
 
     def breakpoint(self, expression):
-        return self.execute("b {0}".format(expression))
+        return self.execute("b {}".format(expression))
 
     def gdb_ignore(self, breakpoint, count=0):
         return self.execute("ignore {} {}".format(breakpoint, count))
