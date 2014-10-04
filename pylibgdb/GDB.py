@@ -39,6 +39,9 @@ class GDB:
     def run(self, args=[]):
         return self.execute("run {}".format(" ".join(args)))
 
+    def gdb_set_args(self, args=[]):
+        return self.execute("set args {}".format(" ".join(args)))
+
     def print(self, expression):
         return self.execute("p {}".format(expression))
     
