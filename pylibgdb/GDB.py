@@ -60,7 +60,7 @@ class GDB:
     def gdb_interactive(self):
         global interactive
         interactive = True
-        print("\n[+] Entering GDB, press CTRL+D to return...")
+        print("[+] Entering GDB, press CTRL+D to return...")
         self.print_prompt()
         verbose_old = self.verbose
         self.verbose = 2
