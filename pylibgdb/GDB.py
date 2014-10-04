@@ -5,10 +5,11 @@ import re
 
 interactive = False
 class GDB:
-    def __init__(self, program):
+    def __init__(self, program, verbose=0):
         self.prompt = "(gdb) "
+        self.verbose = verbose
         self.proc = Popen(["gdb", "-n", "-q", program], bufsize=0, universal_newlines=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
-        self.output()
+        self.read_until_prompt()
 
     def read_until(self, search):
         input_buffer = ""
@@ -16,64 +17,60 @@ class GDB:
             input_buffer += self.proc.stdout.read(1)
         return input_buffer
 
-    def output(self):
-        output = self.read_until(self.prompt)
-        print("{}".format(output), end="")
-        return output
+    def read_until_prompt(self):
+        read_until_prompt = self.read_until(self.prompt)
+        if self.verbose >= 1: print("{}".format(read_until_prompt), end="")
+        return read_until_prompt
 
     def print_prompt(self, end=''):
         print("(gdb) ", end=end)
 
     def execute(self, command):
         self.proc.stdin.write("{0}\n".format(command))
-        print("{}\n".format(command), end="")
+        if self.verbose >= 2: print("{}\n".format(command), end="")
+        return self.read_until_prompt()
 
     def breakpoint(self, expression):
-        self.execute("b {0}".format(expression))
-        self.output()
+        return self.execute("b {0}".format(expression))
 
     def gdb_ignore(self, breakpoint, count=0):
-        self.execute("ignore {} {}".format(breakpoint, count))
-        self.output()
+        return self.execute("ignore {} {}".format(breakpoint, count))
 
     def run(self, args=[]):
-        self.execute("run {}".format(" ".join(args)))
-        self.output()
+        return self.execute("run {}".format(" ".join(args)))
 
     def print(self, expression):
-        self.execute("p {}".format(expression))
-        self.output()
+        return self.execute("p {}".format(expression))
     
     def disassemble(self):
-        self.execute("disas")
-        self.output()
+        return self.execute("disas")
 
     def get_stack(self, offset, raw=False):
-        self.execute("x/x $ebp-{}".format(offset))
-        output = self.output()
+        output = self.execute("x/x $ebp-{}".format(offset))
         match = re.compile("0x[a-z0-9]+.*:\s+0x([a-z0-9]+)").search(output).group(1)
         if raw: return unhexlify(match)
         return hex(int(match, 16))
 
     def set_stack(self, offset, value):
-        self.execute("set {{int}} ($ebp-{}) = {}".format(offset, value))
-        self.output()
+        return self.execute("set {{int}} ($ebp-{}) = {}".format(offset, value))
     
     def gdb_continue(self):
-        self.execute("c")
-        self.output()
+        return self.execute("c")
 
     def gdb_interactive(self):
         global interactive
         interactive = True
         print("\n[+] Entering GDB, press CTRL+D to return...")
         self.print_prompt()
+        verbose_old = self.verbose
+        self.verbose = 2
         while interactive:
             try:
                 self.proc.stdin.write("{}\n".format(input()))
-                self.output()
+                self.read_until_prompt()
             except EOFError:
                 interactive = False
                 print("")
             except KeyboardInterrupt:
-                self.output()
+                self.read_until_prompt()
+        self.verbose = verbose_old
