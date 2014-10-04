@@ -42,6 +42,9 @@ class GDB:
     def gdb_set_args(self, args=[]):
         return self.execute("set args {}".format(" ".join(args)))
 
+    def gdb_generate_core_file(self, filename=""):
+        return self.execute("generate-core-file {}".format(filename))
+
     def print(self, expression):
         return self.execute("p {}".format(expression))
     
