@@ -1,16 +1,13 @@
 from subprocess import Popen, PIPE, STDOUT
 from sys import stdin, stdout, exit
 from binascii import unhexlify
-import pexpect
 import re
 
 interactive = False
 class GDB:
     def __init__(self, program):
-        self.proc = Popen(["gdb", "-n", "-q", program], bufsize=0, universal_newlines=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
-        
-        self.child = pexpect.spawn('gdb -n -q {}'.format(program))
         self.prompt = "(gdb) "
+        self.proc = Popen(["gdb", "-n", "-q", program], bufsize=0, universal_newlines=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
         self.output()
 
     def read_until(self, search):
