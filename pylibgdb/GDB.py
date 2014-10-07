@@ -1,6 +1,7 @@
 from subprocess import Popen, PIPE, STDOUT
 from sys import stdin, stdout, exit
 from binascii import unhexlify
+from .Breakpoint import Breakpoint
 import re
 
 interactive = False
@@ -31,10 +32,21 @@ class GDB:
         return self.read_until_prompt()
 
     def breakpoint(self, expression):
-        return self.execute("b {}".format(expression))
+        output = self.execute("b {}".format(expression))
+        match = re.compile('Breakpoint (\d+) at 0x([\da-f]+)').search(output)
+        bpnumber = match.group(1)
+        address = hex(int(match.group(2), 16))
+        b = Breakpoint(self, bpnumber, address)
+        return b
 
     def gdb_ignore(self, breakpoint, count=0):
         return self.execute("ignore {} {}".format(breakpoint, count))
+
+    def gdb_disable(self, breakpoint):
+        return self.execute("disable {}".format(breakpoint))
+
+    def gdb_enable(self, breakpoint):
+        return self.execute("enable {}".format(breakpoint))
 
     def run(self, args=[]):
         return self.execute("run {}".format(" ".join(args)))
@@ -53,7 +65,7 @@ class GDB:
 
     def get_stack(self, offset, raw=False):
         output = self.execute("x/x $ebp-{}".format(offset))
-        match = re.compile("0x[a-z0-9]+.*:\s+0x([a-z0-9]+)").search(output).group(1)
+        match = re.compile("0x[a-z\d]+.*:\s+0x([a-z\d]+)").search(output).group(1)
         if raw: return unhexlify(match)
         return hex(int(match, 16))
 
