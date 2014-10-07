@@ -6,11 +6,12 @@ import re
 
 interactive = False
 class GDB:
-    def __init__(self, program, verbose=0):
+    def __init__(self, program=None, verbose=0):
         self.prompt = "(gdb) "
         self.verbose = verbose
-        self.proc = Popen(["gdb", "-n", "-q", program], bufsize=0, universal_newlines=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+        self.proc = Popen(["gdb", "-n", "-q"], bufsize=0, universal_newlines=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
         self.read_until_prompt()
+        if program: self.file(program)
 
     def read_until(self, search):
         input_buffer = ""
@@ -50,6 +51,9 @@ class GDB:
 
     def gdb_delete(self, breakpoint):
         return self.execute("delete {}".format(breakpoint))
+
+    def file(self, program):
+        return self.execute("file {}".format(program))
 
     def run(self, args=[]):
         return self.execute("run {}".format(" ".join(args)))
