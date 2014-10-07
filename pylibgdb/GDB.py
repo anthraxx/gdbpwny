@@ -67,6 +67,9 @@ class GDB:
     def gdb_generate_core_file(self, filename=""):
         return self.execute("generate-core-file {}".format(filename))
 
+    def core_file(self, filename=""):
+        return self.execute("core-file {}".format(filename))
+
     def print(self, expression):
         return self.execute("p {}".format(expression))
     
