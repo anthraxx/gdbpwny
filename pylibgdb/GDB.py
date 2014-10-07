@@ -42,11 +42,14 @@ class GDB:
     def gdb_ignore(self, breakpoint, count=0):
         return self.execute("ignore {} {}".format(breakpoint, count))
 
+    def gdb_enable(self, breakpoint):
+        return self.execute("enable {}".format(breakpoint))
+
     def gdb_disable(self, breakpoint):
         return self.execute("disable {}".format(breakpoint))
 
-    def gdb_enable(self, breakpoint):
-        return self.execute("enable {}".format(breakpoint))
+    def gdb_delete(self, breakpoint):
+        return self.execute("delete {}".format(breakpoint))
 
     def run(self, args=[]):
         return self.execute("run {}".format(" ".join(args)))
