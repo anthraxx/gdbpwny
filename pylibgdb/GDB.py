@@ -84,7 +84,19 @@ class GDB:
 
     def set_stack(self, offset, value):
         return self.execute("set {{int}} ($ebp-{}) = {}".format(offset, value))
-    
+
+    def gdb_next(self, count=1):
+        return self.execute("next {}".format(count))
+
+    def gdb_nexti(self, count=1):
+        return self.execute("nexti {}".format(count))
+
+    def gdb_step(self, count=1):
+        return self.execute("step {}".format(count))
+
+    def gdb_stepi(self, count=1):
+        return self.execute("stepi {}".format(count))
+
     def gdb_continue(self):
         return self.execute("c")
 
