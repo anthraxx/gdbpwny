@@ -72,7 +72,7 @@ class GDB:
 
     def print(self, expression):
         return self.execute("p {}".format(expression))
-    
+
     def disassemble(self):
         return self.execute("disas")
 
