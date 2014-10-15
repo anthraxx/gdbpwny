@@ -5,12 +5,13 @@ from .Breakpoint import Breakpoint
 import re
 
 class GDB:
-    def __init__(self, program=None, verbose=0):
+    def __init__(self, program=None, args=[], verbose=0):
         self.prompt = "(gdb) "
         self.verbose = verbose
         self.proc = Popen(["gdb", "-n", "-q"], bufsize=0, universal_newlines=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
         self.read_until_prompt()
         if program: self.file(program)
+        if args: self.gdb_set_args(args)
 
     def read_until(self, search):
         input_buffer = ""
