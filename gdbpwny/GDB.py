@@ -4,7 +4,6 @@ from binascii import unhexlify
 from .Breakpoint import Breakpoint
 import re
 
-interactive = False
 class GDB:
     def __init__(self, program=None, verbose=0):
         self.prompt = "(gdb) "
@@ -101,7 +100,6 @@ class GDB:
         return self.execute("c")
 
     def gdb_interactive(self):
-        global interactive
         interactive = True
         print("[+] Entering GDB, press CTRL+D to return...")
         self.print_prompt()
