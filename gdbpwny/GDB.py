@@ -44,6 +44,7 @@ class GDB:
         self.prompt = "(gdb) "
         self.verbose = verbose
         self.breakpoints = {}
+        self.signal_callbacks = {}
         self.proc = Popen(["gdb", "-n", "-q"], bufsize=0, universal_newlines=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
         self.read_until_prompt()
         if program: self.file(program)
@@ -65,6 +66,13 @@ class GDB:
                     function_information = match.group(3)
                     breakpoint = self.get_breakpoint(breakpoint_number)
                     breakpoint.hit(address, function_information)
+            if line.startswith("Program received signal"):
+                match = re.compile("Program received signal ([A-Z]+), .*?.\n0x([\da-f]+) in ([^\n]+)\n", re.M).search(output)
+                if match:
+                    signal = Signal[match.group(1)]
+                    address = hex(int(match.group(2), 16))
+                    function_information = match.group(3)
+                    self.signal_callbacks.get(signal)(self, signal, address, function_information)
 
     def read_until_prompt(self):
         read_until_prompt = self.read_until(self.prompt)
@@ -91,6 +99,9 @@ class GDB:
 
     def get_breakpoint(self, number):
         return self.breakpoints.get(number)
+
+    def set_signal_callback(self, signal, callback):
+        self.signal_callbacks[signal] = callback
 
     def gdb_ignore(self, breakpoint, count=0):
         return self.execute("ignore {} {}".format(breakpoint, count))
