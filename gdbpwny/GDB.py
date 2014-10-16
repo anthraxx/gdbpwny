@@ -1,8 +1,43 @@
 from subprocess import Popen, PIPE, STDOUT
 from sys import stdin, stdout, exit
 from binascii import unhexlify
+from enum import Enum
 from .Breakpoint import Breakpoint
 import re
+
+
+class Signal(Enum):
+    SIGHUP    = 1
+    SIGINT    = 2
+    SIGQUIT   = 3
+    SIGILL    = 4
+    SIGTRAP   = 5
+    SIGABRT   = 6
+    SIGBUS    = 7
+    SIGFPE    = 8
+    SIGKILL   = 9
+    SIGUSR1   = 10
+    SIGSEGV   = 11
+    SIGUSR2   = 12
+    SIGPIPE   = 13
+    SIGALRM   = 14
+    SIGTERM   = 15
+    SIGSTKFLT = 16
+    SIGCHLD   = 17
+    SIGCONT   = 18
+    SIGSTOP   = 19
+    SIGTSTP   = 20
+    SIGTTIN   = 21
+    SIGTTOU   = 22
+    SIGURG    = 23
+    SIGXCPU   = 24
+    SIGXFSZ   = 25
+    SIGVTALRM = 26
+    SIGPROF   = 27
+    SIGWINCH  = 28
+    SIGIO     = 29
+    SIGPWR    = 30
+
 
 class GDB:
     def __init__(self, program=None, args=[], verbose=0):
