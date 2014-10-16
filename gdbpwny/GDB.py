@@ -8,6 +8,7 @@ class GDB:
     def __init__(self, program=None, args=[], verbose=0):
         self.prompt = "(gdb) "
         self.verbose = verbose
+        self.breakpoints = {}
         self.proc = Popen(["gdb", "-n", "-q"], bufsize=0, universal_newlines=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT)
         self.read_until_prompt()
         if program: self.file(program)
@@ -19,9 +20,21 @@ class GDB:
             input_buffer += self.proc.stdout.read(1)
         return input_buffer
 
+    def parse_gdb_output(self, output):
+        for line in output.splitlines():
+            if line.startswith("Breakpoint"):
+                match = re.compile("Breakpoint (\d+), 0x([\da-f]+) in (.*)").search(line)
+                if match:
+                    breakpoint_number = match.group(1)
+                    address = hex(int(match.group(2), 16))
+                    function_information = match.group(3)
+                    breakpoint = self.get_breakpoint(breakpoint_number)
+                    breakpoint.hit(address, function_information)
+
     def read_until_prompt(self):
         read_until_prompt = self.read_until(self.prompt)
         if self.verbose >= 1: print("{}".format(read_until_prompt), end="")
+        self.parse_gdb_output(read_until_prompt)
         return read_until_prompt
 
     def print_prompt(self, end=''):
@@ -32,13 +45,17 @@ class GDB:
         if self.verbose >= 2: print("{}\n".format(command), end="")
         return self.read_until_prompt()
 
-    def breakpoint(self, expression):
+    def breakpoint(self, expression, callback=None):
         output = self.execute("b {}".format(expression))
         match = re.compile('Breakpoint (\d+) at 0x([\da-f]+)').search(output)
         bpnumber = match.group(1)
         address = hex(int(match.group(2), 16))
-        b = Breakpoint(self, bpnumber, address)
+        b = Breakpoint(self, bpnumber, address, callback)
+        self.breakpoints[bpnumber] = b
         return b
+
+    def get_breakpoint(self, number):
+        return self.breakpoints.get(number)
 
     def gdb_ignore(self, breakpoint, count=0):
         return self.execute("ignore {} {}".format(breakpoint, count))
