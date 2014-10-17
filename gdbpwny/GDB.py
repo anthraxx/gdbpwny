@@ -58,10 +58,13 @@ class GDB:
     def breakpoint(self, expression, callback=None):
         output = self.execute("b {}".format(expression))
         match = re.compile('Breakpoint (\d+) at 0x([\da-f]+)').search(output)
-        bpnumber = match.group(1)
-        address = hex(int(match.group(2), 16))
-        b = Breakpoint(self, bpnumber, address, callback)
-        self.breakpoints[bpnumber] = b
+        if match:
+            bpnumber = match.group(1)
+            address = hex(int(match.group(2), 16))
+            b = Breakpoint(self, bpnumber, address, callback)
+            self.breakpoints[bpnumber] = b
+        else:
+            raise UndefinedReferenceException(output)
         return b
 
     def get_breakpoint(self, number):
@@ -146,3 +149,7 @@ class GDB:
             except KeyboardInterrupt:
                 self.read_until_prompt()
         self.verbose = verbose_old
+
+
+class UndefinedReferenceException(Exception):
+    pass
