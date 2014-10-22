@@ -3,6 +3,7 @@ from sys import stdin, stdout, exit
 from binascii import unhexlify
 from .Breakpoint import Breakpoint
 from .Signal import Signal
+from .Register import Register, RegisterSet
 import re
 
 
@@ -175,6 +176,17 @@ class GDB:
         output = self.execute("set architecture {}".format(architecture))
         if not output.startswith("The target architecture is assumed to be"):
             raise UndefinedArchitectureException(output.splitlines()[0])
+
+    def get_registers(self):
+        output = self.execute("info registers")
+        register_set = RegisterSet()
+        for line in output.splitlines():
+            match = re.compile("(\S+)\s+0x([a-f\d]+)\s").search(line)
+            if match:
+                register_name = match.group(1)
+                register_value = hex(int(match.group(2), 16))
+                register_set[register_name] = Register(register_name, register_value)
+        return register_set
 
 
 class UndefinedArchitectureException(Exception):
