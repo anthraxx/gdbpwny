@@ -164,6 +164,25 @@ class GDB:
                 self.read_until_prompt()
         self.verbose = verbose_old
 
+    def get_architecture(self):
+        output = self.execute("show architecture")
+        match = re.compile("The target architecture is assumed to be (.*)").search(output)
+        if not match:
+            match = re.compile("The target architecture is set automatically \(currently (.*?)\)").search(output)
+        if not match:
+            raise Exception("Unknown architecture line: '{}'".format(output.splitlines()[0]))
+        return match.group(1)
+
+    def set_architecture(self, architecture):
+        output = self.execute("set architecture {}".format(architecture))
+        if not output.startswith("The target architecture is assumed to be"):
+            raise UndefinedArchitectureException(output.splitlines()[0])
+
+
+class UndefinedArchitectureException(Exception):
+    pass
+
 
 class UndefinedReferenceException(Exception):
     pass
+
