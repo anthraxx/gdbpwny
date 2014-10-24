@@ -36,8 +36,7 @@ class GDB:
                 function_information = match.group(3)
                 breakpoint = self.get_breakpoint(breakpoint_number)
                 breakpoint.hit(address, function_information)
-                continue
-            if line.startswith("Program received signal"):
+            elif line.startswith("Program received signal"):
                 match = re.compile("Program received signal ([A-Z]+), .*?.\n0x([\da-f]+) in ([^\n]+)\n", re.M).search(output)
                 if not match:
                     continue
@@ -45,7 +44,6 @@ class GDB:
                 address = hex(int(match.group(2), 16))
                 function_information = match.group(3)
                 self.signal_callbacks.get(signal)(self, signal, address, function_information)
-                continue
 
     def read_until_prompt(self):
         read_until_prompt = self.read_until(self.prompt)
