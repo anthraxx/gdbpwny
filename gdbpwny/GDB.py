@@ -7,7 +7,7 @@ from .Register import Register, RegisterSet
 import re
 
 
-class GDB:
+class GDB(object):
     def __init__(self, program=None, args=[], verbose=0, pending_breakpoints=True):
         self.prompt = "(gdb) "
         self.verbose = verbose

@@ -1,5 +1,5 @@
 
-class Breakpoint:
+class Breakpoint(object):
     def __init__(self, gdb, number, address, callback=None):
         self.gdb = gdb
         self.number = number
