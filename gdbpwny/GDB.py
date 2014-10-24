@@ -103,8 +103,8 @@ class GDB:
     def print(self, expression):
         return self.execute("p {}".format(expression))
 
-    def disassemble(self):
-        return self.execute("disas")
+    def disassemble(self, target=""):
+        return self.execute("disas {}".format(target))
 
     def get_stack(self, offset, raw=False):
         output = self.execute("x/x $ebp-{}".format(offset))
