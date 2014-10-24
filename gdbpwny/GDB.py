@@ -29,19 +29,23 @@ class GDB:
         for line in output.splitlines():
             if line.startswith("Breakpoint"):
                 match = re.compile("Breakpoint (\d+), 0x([\da-f]+) in (.*)").search(line)
-                if match:
-                    breakpoint_number = match.group(1)
-                    address = hex(int(match.group(2), 16))
-                    function_information = match.group(3)
-                    breakpoint = self.get_breakpoint(breakpoint_number)
-                    breakpoint.hit(address, function_information)
+                if not match:
+                    continue
+                breakpoint_number = match.group(1)
+                address = hex(int(match.group(2), 16))
+                function_information = match.group(3)
+                breakpoint = self.get_breakpoint(breakpoint_number)
+                breakpoint.hit(address, function_information)
+                continue
             if line.startswith("Program received signal"):
                 match = re.compile("Program received signal ([A-Z]+), .*?.\n0x([\da-f]+) in ([^\n]+)\n", re.M).search(output)
-                if match:
-                    signal = Signal[match.group(1)]
-                    address = hex(int(match.group(2), 16))
-                    function_information = match.group(3)
-                    self.signal_callbacks.get(signal)(self, signal, address, function_information)
+                if not match:
+                    continue
+                signal = Signal[match.group(1)]
+                address = hex(int(match.group(2), 16))
+                function_information = match.group(3)
+                self.signal_callbacks.get(signal)(self, signal, address, function_information)
+                continue
 
     def read_until_prompt(self):
         read_until_prompt = self.read_until(self.prompt)
@@ -66,16 +70,15 @@ class GDB:
         if match:
             breakpoint_number = match.group(1)
             address = hex(int(match.group(2), 16))
-        else:
-            if self.pending_breakpoints:
-                match = re.compile("Breakpoint (\d+) (.*?) pending.").search(output)
-                if match:
-                    breakpoint_number = match.group(1)
-        if breakpoint_number:
-            breakpoint = Breakpoint(self, breakpoint_number, address, callback)
-            self.breakpoints[breakpoint_number] = breakpoint
+        elif self.pending_breakpoints:
+            match = re.compile("Breakpoint (\d+) (.*?) pending.").search(output)
+            if not match:
+                raise UndefinedReferenceException(output.splitlines()[0])
+            breakpoint_number = match.group(1)
         else:
             raise UndefinedReferenceException(output.splitlines()[0])
+        breakpoint = Breakpoint(self, breakpoint_number, address, callback)
+        self.breakpoints[breakpoint_number] = breakpoint
         return breakpoint
 
     def get_breakpoint(self, number):
