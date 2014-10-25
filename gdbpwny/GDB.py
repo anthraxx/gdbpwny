@@ -188,6 +188,16 @@ class GDB(object):
                 register_set[register_name] = Register(register_name, register_value)
         return register_set
 
+    def enable_logging(self, filename, overwrite=True):
+        self.disable_logging()
+        self.execute("set logging file {}".format(filename))
+        self.execute("set logging overwrite {}".format("on" if overwrite else "off"))
+        self.execute("set logging redirect off")
+        return self.execute("set logging on")
+
+    def disable_logging(self):
+        return self.execute("set logging off")
+
 
 class UndefinedArchitectureException(Exception):
     pass
