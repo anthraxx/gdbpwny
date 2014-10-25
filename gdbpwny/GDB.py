@@ -19,6 +19,7 @@ class GDB(object):
         if program: self.file(program)
         if args: self.gdb_set_args(args)
         if pending_breakpoints: self.execute("set breakpoint pending on")
+        self.execute("set height 0")
 
     def read_until(self, search):
         input_buffer = ""
