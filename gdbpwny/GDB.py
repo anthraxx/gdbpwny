@@ -4,6 +4,7 @@ from binascii import unhexlify
 from .Breakpoint import Breakpoint
 from .Signal import Signal
 from .Register import Register, RegisterSet
+from .SyntaxStyle import SyntaxStyle
 import re
 
 
@@ -198,6 +199,11 @@ class GDB(object):
 
     def disable_logging(self):
         return self.execute("set logging off")
+
+    def set_disassembly_flavor(self, flavor):
+        if type(flavor) is SyntaxStyle:
+            flavor = flavor.value
+        return self.execute("set disassembly-flavor {}".format(flavor))
 
 
 class UndefinedArchitectureException(Exception):
