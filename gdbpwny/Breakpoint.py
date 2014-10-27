@@ -20,4 +20,6 @@ class Breakpoint(object):
 
     def hit(self, address, function_information):
         if self.callback:
+            if not address:
+                address = self.address
             self.callback(self.gdb, self.number, address, function_information)
