@@ -31,12 +31,17 @@ class GDB(object):
     def parse_gdb_output(self, output):
         for line in output.splitlines():
             if line.startswith("Breakpoint"):
-                match = re.compile("Breakpoint (\d+), 0x([\da-f]+) in (.*)").search(line)
+                match = re.compile("Breakpoint (?P<number>\d+), 0x(?P<address>[\da-f]+) in (?P<function>.*)").search(line)
                 if not match:
-                    continue
-                breakpoint_number = match.group(1)
-                address = hex(int(match.group(2), 16))
-                function_information = match.group(3)
+                    match = re.compile("Breakpoint (?P<number>\d+), (?P<function>.*)").search(line)
+                    if not match:
+                        continue
+                match_dict = match.groupdict()
+                breakpoint_number = match_dict.get("number")
+                address = match_dict.get("address")
+                if address:
+                    address = hex(int(address, 16))
+                function_information = match_dict.get("function")
                 breakpoint = self.get_breakpoint(breakpoint_number)
                 breakpoint.hit(address, function_information)
             elif line.startswith("Program received signal"):
